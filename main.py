@@ -2,13 +2,15 @@ import json
 from lips.api_client import get_mentors_or_congratulations
 
 
-def fetch_mentors(url):
+def fetch_mentors():
+    url = 'http://127.0.0.1:8000/mentors'
     mentors_json = get_mentors_or_congratulations(url, 'mentors')
     mentors = json.loads(mentors_json)
     return mentors
 
 
-def fetch_congratulations(url):
+def fetch_congratulations():
+    url = 'http://127.0.0.1:8000/congratulations'
     congratulations_json = get_mentors_or_congratulations(
         url, 'congratulations')
     congratulations = json.loads(congratulations_json)
@@ -22,20 +24,16 @@ def fetch_ascii_art(url):
 
 
 def main():
-    url_mentors = 'http://127.0.0.1:8000/mentors'
-    url_congratulations = 'http://127.0.0.1:8000/congratulations'
     url_ascii = 'http://127.0.0.1:8000/asciiart'
 
-    mentors = fetch_mentors(url_mentors)
-    congratulations = fetch_congratulations(url_congratulations)
+    mentors = fetch_mentors()
+    congratulations = fetch_congratulations()
     ascii_art = fetch_ascii_art(url_ascii)
 
     print(mentors)
     print('')
     print(congratulations)
     print('~~~Example~~~')
-    print(mentors['mentors'][0]['last_name'])
-    print(mentors['mentors'][0]['first_name'])
     print(mentors['mentors'][0]['tg_id'])
     print(congratulations['congratulations'][0])
     for line in ascii_art['ASCIIART']:
