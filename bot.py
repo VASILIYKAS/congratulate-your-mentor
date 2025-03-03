@@ -7,14 +7,34 @@ from main import fetch_mentors, fetch_congratulations
 
 
 def start(update, context):
-    keyboard = [
-        [InlineKeyboardButton('Выбрать ментора',
-                              callback_data='show_mentors')],
-    ]
+    mentors = fetch_mentors()
+    user_chat_id = update.message.chat_id
+    for mentor in mentors['mentors']:
+        if user_chat_id == mentor['tg_id']:
+            keyboard = [
+                [InlineKeyboardButton('Выбрать ментора',
+                                      callback_data='show_mentors')],
+                [InlineKeyboardButton('Завершить',
+                                      callback_data='end')]                      
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            update.message.reply_text(
+                "Привет! Вижу вы ментор.\n"
+                "Если вы хотите поздравить другого ментора, нажмите кнопку выбора ментора.\n"
+                "Для завершения работы бота, нажмите кнопку завершить.",
+                reply_markup=reply_markup,
+            )
+            return
+    else:
+        keyboard = [
+            [InlineKeyboardButton('Выбрать ментора',
+                                    callback_data='show_mentors')],
+        ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text(
-        ''' Привет! Я ваш бот для поздравления менторов.
-        Для того что бы выбрать ментора, нажмите кнопку выбора ментора.''',
+        "Привет!\n" 
+        "Я ваш бот для поздравления менторов.\n"
+        "Для того что бы выбрать ментора, нажмите кнопку выбора ментора.\n",
         reply_markup=reply_markup,
     )
 
@@ -33,7 +53,7 @@ def show_mentors(query, context, page=0):
     start_index = page * mentors_per_page
     end_index = start_index + mentors_per_page
     mentors_to_show = mentors[start_index:end_index]
-
+    
     for mentor in mentors_to_show:
         button_text = f"{mentor['first_name']} {mentor['last_name']}"
         callback = f"mentor_{mentor['tg_id']}"
@@ -86,6 +106,10 @@ def button_handler(update, context):
 
     if query.data == 'show_mentors':
         show_mentors(query, context)
+
+    elif query.data == 'end':
+        show_mentors(query, context)
+        return    
 
     elif query.data.startswith('page_'):
         page = int(query.data.split('_')[1])
