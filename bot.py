@@ -53,9 +53,15 @@ def show_mentors(query, context, page=0):
     start_index = page * mentors_per_page
     end_index = start_index + mentors_per_page
     mentors_to_show = mentors[start_index:end_index]
-    
+
     for mentor in mentors_to_show:
-        button_text = f"{mentor['first_name']} {mentor['last_name']}"
+        full_name = f"{mentor['first_name']} {mentor['last_name']}"
+        words = full_name.split()
+        if len(words) > 2:
+            first_two_words = ' '.join(words[:2])
+            button_text = f'{first_two_words} ...'
+        else:
+            button_text = full_name
         callback = f"mentor_{mentor['tg_id']}"
         buttons.append([InlineKeyboardButton(button_text,
                                              callback_data=callback)])
