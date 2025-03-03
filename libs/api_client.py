@@ -30,7 +30,7 @@ def get_mentors_or_congratulations(url, endpoint):
         response_model = AsciiArt
     else:
         raise ValueError("Неверный тип данных")
-    
+
     try:
         response = httpx.get(url)
         response.status_code
@@ -40,11 +40,11 @@ def get_mentors_or_congratulations(url, endpoint):
         response_object = response_model(**external_data)
 
         return response_object.model_dump_json()
-    
+
     except httpx.ConnectError:
         print('Ошибка соединения: не удалось подключиться к серверу.')
     except ValidationError as e:
-        print('Ошибка формата ответа: неправильный формат данных в json файле', 
+        print('Ошибка формата ответа: неправильный формат данных в json файле',
               e.errors())
     except httpx.HTTPError as exc:
         print('Произошла ошибка при выполнении запроса.')
