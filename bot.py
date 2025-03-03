@@ -56,12 +56,13 @@ def show_mentors(query, context, page=0):
 
     for mentor in mentors_to_show:
         full_name = f"{mentor['first_name']} {mentor['last_name']}"
+        username = mentor['user_name']
         words = full_name.split()
         if len(words) > 2:
             first_two_words = ' '.join(words[:2])
-            button_text = f'{first_two_words} ...'
+            button_text = f'{first_two_words} ... - {username}'
         else:
-            button_text = full_name
+            button_text = f'{full_name} - {username}'
         callback = f"mentor_{mentor['tg_id']}"
         buttons.append([InlineKeyboardButton(button_text,
                                              callback_data=callback)])
