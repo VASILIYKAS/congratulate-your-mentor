@@ -209,6 +209,7 @@ def error_handler(update, context):
 
     elif isinstance(error, BadRequest):
         if 'Chat not found' in str(error):
+            print('Выбранный пользователь не взаимодействовал с ботом. ', error)
             text = 'Пользователь ещё не взаимодействовал с ботом. Попробуйте позже.'
 
     else:
