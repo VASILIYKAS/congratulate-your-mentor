@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.error import BadRequest
 from main import fetch_mentors, fetch_congratulations
 from pydantic import ValidationError
 
@@ -126,7 +127,7 @@ def button_handler(update, context):
         show_mentors(query, context)
 
     elif query.data == 'end':
-        show_mentors(query, context)
+        query.edit_message_text(text='Спасибо за доверие! Я вас запомнил, ждите поздравлений 😇')
         return
 
     elif query.data.startswith('page_'):
@@ -205,6 +206,11 @@ def error_handler(update, context):
     elif isinstance(error, json.JSONDecodeError):
         print('Ошибка формата JSON. Сервер вернул некорректные данные. ', error)
         text = "Что-то пошло не так. Попробуйте позже."
+
+    elif isinstance(error, BadRequest):
+        if 'Chat not found' in str(error):
+            text = 'Пользователь ещё не взаимодействовал с ботом. Попробуйте позже.'
+
     else:
         print('Произошла непредвиденная ошибка. ', error)
         text = "Произошла непредвиденная ошибка. Попробуйте позже."
