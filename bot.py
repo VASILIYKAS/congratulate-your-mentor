@@ -24,9 +24,11 @@ def start(update, context):
             reply_markup = InlineKeyboardMarkup(keyboard)
             update.message.reply_text(
                 "Привет! Вижу вы ментор.\n"
-                "Если вы хотите поздравить другого ментора, нажмите кнопку выбора ментора.\n"
-                "Для завершения работы бота, нажмите кнопку завершить.",
+                "Если вы хотите поздравить другого ментора, "
+                "нажмите кнопку выбора *ментора*.\n"
+                "Для завершения работы бота, нажмите кнопку *завершить*.",
                 reply_markup=reply_markup,
+                parse_mode='Markdown',
             )
             return
     else:
@@ -38,8 +40,10 @@ def start(update, context):
     update.message.reply_text(
         "Привет!\n"
         "Я ваш бот для поздравления менторов.\n"
-        "Для того что бы выбрать ментора, нажмите кнопку выбора ментора.\n",
+        "Для того что бы выбрать ментора, "
+        "нажмите кнопку выбора *ментора*.\n",
         reply_markup=reply_markup,
+        parse_mode='Markdown',
     )
 
 
@@ -119,6 +123,7 @@ def show_congratulations(query, context):
     except Exception as e:
         raise e
 
+
 def button_handler(update, context):
     query = update.callback_query
     query.answer()
@@ -127,7 +132,8 @@ def button_handler(update, context):
         show_mentors(query, context)
 
     elif query.data == 'end':
-        query.edit_message_text(text='Спасибо за доверие! Я вас запомнил, ждите поздравлений 😇')
+        query.edit_message_text(text='Спасибо!'
+                                'Я вас запомнил, ждите поздравлений 😇')
         return
 
     elif query.data.startswith('page_'):
@@ -168,14 +174,19 @@ def confirm_selection(query, context):
     mentor_id = context.user_data.get('selected_mentor')
     first_name, last_name = get_mentor_name_by_id(mentor_id)
 
-    text = f'''Вы выбрали ментора: {first_name} {last_name}
-    Поздравление: {selected_congratulation}.
-    Для отправки поздравления нажмите кнопку отправить'''
-
+    text = (
+        f'*Вы выбрали ментора*: {first_name} {last_name}\n'
+        f'*Поздравление*: {selected_congratulation}\n'
+        'Для отправки поздравления нажмите кнопку *отправить*'
+    )
     keyboard = [[InlineKeyboardButton('Отправить', callback_data='send')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    query.edit_message_text(text=text, reply_markup=reply_markup)
+    query.edit_message_text(
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode='Markdown',
+        )
 
 
 def send_congratulation(query, context):
@@ -204,13 +215,18 @@ def error_handler(update, context):
         text = "Что-то пошло не так. Попробуйте позже."
 
     elif isinstance(error, json.JSONDecodeError):
-        print('Ошибка формата JSON. Сервер вернул некорректные данные. ', error)
+        print('Ошибка формата JSON. Сервер вернул некорректные данные. ',
+              error)
         text = "Что-то пошло не так. Попробуйте позже."
 
     elif isinstance(error, BadRequest):
         if 'Chat not found' in str(error):
-            print('Выбранный пользователь не взаимодействовал с ботом. ', error)
-            text = 'Пользователь ещё не взаимодействовал с ботом. Попробуйте позже.'
+            print('Выбранный пользователь не взаимодействовал с ботом. ',
+                  error)
+            text = (
+                'Пользователь ещё не взаимодействовал с ботом. '
+                'Попробуйте позже.'
+            )
 
     else:
         print('Произошла непредвиденная ошибка. ', error)
