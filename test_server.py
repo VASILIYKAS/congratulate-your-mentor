@@ -4,6 +4,28 @@ import json
 
 class MyHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
+        if self.path == '/': 
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            welcome_message = """
+                <html>
+                    <meta charset="UTF-8">
+                    <head><title>Тестовый сервер</title></head>
+                    <body>
+                        <h1>Добро пожаловать на сервер!</h1>
+                        <p>Доступные эндпоинты:</p>
+                        <ul>
+                            <li><a href="/mentors">/mentors</a></li>
+                            <li><a href="/congratulations">/congratulations</a></li>
+                            <li><a href="/asciiart">/asciiart</a></li>
+                        </ul>
+                    </body>
+                </html>
+                """
+            self.wfile.write(welcome_message.encode('utf-8'))
+            return
+        
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
