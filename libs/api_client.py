@@ -1,38 +1,19 @@
 import httpx
-from pydantic import BaseModel, ValidationError
-from typing import List
-
-
-class Mentor(BaseModel):
-    last_name: str
-    first_name: str
-    tg_id: int
-    user_name: str
-
-
-class MentorsResponse(BaseModel):
-    mentors: List[Mentor]
-
-
-class Congratulations(BaseModel):
-    congratulations: List[str]
-
-
-class AsciiArt(BaseModel):
-    ASCIIART: List[str]
+from validators import MentorsResponse, Congratulations, AsciiArt
+from pydantic import ValidationError
 
 
 def get_mentors_or_congratulations(url, endpoint):
-    if endpoint == 'mentors':
-        response_model = MentorsResponse
-    elif endpoint == 'congratulations':
-        response_model = Congratulations
-    elif endpoint == 'asciiart':
-        response_model = AsciiArt
-    else:
-        raise ValueError("Неверный тип данных")
-
     try:
+        if endpoint == 'mentors':
+            response_model = MentorsResponse
+        elif endpoint == 'congratulations':
+            response_model = Congratulations
+        elif endpoint == 'asciiart':
+            response_model = AsciiArt
+        else:
+            raise ValueError("Неверный тип данных")
+
         response = httpx.get(url)
         response.status_code
         response.raise_for_status()
@@ -40,13 +21,11 @@ def get_mentors_or_congratulations(url, endpoint):
 
         response_object = response_model(**external_data)
 
-        return response_object.model_dump_json()
+        return response_object
 
-    except httpx.ConnectError:
-        print('Ошибка соединения: не удалось подключиться к серверу.')
     except ValidationError as e:
-        print('Ошибка формата ответа: неправильный формат данных в json файле',
-              e.errors())
-    except httpx.HTTPError as exc:
-        print('Произошла ошибка при выполнении запроса.')
-        print(f'Код ошибки: {response.status_code} URL: {exc.request.url!r}.')
+        raise e
+    except httpx.HTTPError as e:
+        raise e
+    except Exception as e:
+        raise e
