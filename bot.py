@@ -194,7 +194,21 @@ def send_congratulation(query, context):
     selected_congratulation = context.user_data.get('selected_congratulation')
 
     context.bot.send_message(chat_id=chat_id, text=selected_congratulation)
-    query.edit_message_text(text="Поздравление отправлено! 🎉")
+
+    keyboard = [
+        [InlineKeyboardButton(
+            'Поздравить другого ментора',
+            callback_data='show_mentors'
+            )]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    query.edit_message_text(
+        text="""Поздравление успешно отправлено! 🎉
+Хотите поздравить ещё одного ментора?""",
+        reply_markup=reply_markup,
+        parse_mode='Markdown',
+    )
 
 
 def error_handler(update, context):
@@ -228,6 +242,23 @@ def error_handler(update, context):
                 'Попробуйте позже.'
             )
 
+            keyboard = [
+                [InlineKeyboardButton(
+                    "Выбрать другого ментора",
+                    callback_data='show_mentors'
+                    )]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+            if update and update.callback_query:
+                update.callback_query.message.reply_text(
+                    text,
+                    reply_markup=reply_markup
+                    )
+            else:
+                update.message.reply_text(text, reply_markup=reply_markup)
+
+            return 
     else:
         print('Произошла непредвиденная ошибка. ', error)
         text = "Произошла непредвиденная ошибка. Попробуйте позже."
