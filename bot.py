@@ -171,8 +171,8 @@ def get_mentor_name_by_id(tg_id):
 
 def confirm_selection(query, context):
     selected_congratulation = context.user_data.get('selected_congratulation')
-    mentor_id = context.user_data.get('selected_mentor')
-    first_name, last_name = get_mentor_name_by_id(mentor_id)
+    chat_id = context.user_data.get('selected_mentor')
+    first_name, last_name = get_mentor_name_by_id(chat_id)
 
     text = (
         f'*Вы выбрали ментора*: {first_name} {last_name}\n'
@@ -213,6 +213,8 @@ def send_congratulation(query, context):
 
 def error_handler(update, context):
     error = context.error
+    chat_id = context.user_data.get('selected_mentor')
+    first_name, last_name = get_mentor_name_by_id(chat_id)
 
     if isinstance(error, httpx.ConnectError):
         print('Ошибка соединения: не удалось подключиться к серверу. ', error)
@@ -235,7 +237,8 @@ def error_handler(update, context):
 
     elif isinstance(error, BadRequest):
         if 'Chat not found' in str(error):
-            print('Выбранный пользователь не взаимодействовал с ботом. ',
+            print(f'Выбранный пользователь {first_name} {last_name} '
+                  'не взаимодействовал с ботом. ',
                   error)
             text = (
                 'Пользователь ещё не взаимодействовал с ботом. '
