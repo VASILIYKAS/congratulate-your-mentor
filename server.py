@@ -38,7 +38,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         
         elif self.path == '/asciiart':
             file_path = 'data/ascii_art.json'
-            
+        
         else:
             self.send_response(404)
             self.end_headers()
