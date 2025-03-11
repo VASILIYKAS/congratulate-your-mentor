@@ -6,20 +6,21 @@ from telegram.ext import Updater, CommandHandler
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
-from main import fetch_mentors, fetch_congratulations
+from fetch_data import fetch_mentors, fetch_postcards
 from pydantic import ValidationError
 
 
 def start(update, context):
-    mentors = fetch_mentors()
+    mentors_response = fetch_mentors()
+    mentors = mentors_response.mentors
     user_chat_id = update.message.chat_id
-    for mentor in mentors.mentors:
-        if user_chat_id == mentor.tg_id:
+    for mentor in mentors:
+        if user_chat_id == mentor.tg_chat_id:
             keyboard = [
                 [InlineKeyboardButton('Выбрать ментора',
                                       callback_data='show_mentors')],
                 [InlineKeyboardButton('Завершить',
-                                      callback_data='end')]
+                                      callback_data='end')],
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             update.message.reply_text(
@@ -64,15 +65,15 @@ def show_mentors(query, context, page=0):
         mentors_to_show = mentors[start_index:end_index]
 
         for mentor in mentors_to_show:
-            full_name = f"{mentor.first_name} {mentor.last_name}"
-            username = mentor.user_name
+            full_name = f"{mentor.name['first']} {mentor.name['second']}"
+            username = mentor.tg_username
             words = full_name.split()
             if len(words) > 2:
                 first_two_words = ' '.join(words[:2])
                 button_text = f'{first_two_words} ... - {username}'
             else:
                 button_text = f'{full_name} - {username}'
-            callback = f"mentor_{mentor.tg_id}"
+            callback = f"mentor_{mentor.tg_chat_id}"
             buttons.append([InlineKeyboardButton(button_text,
                                                  callback_data=callback)])
 
@@ -100,19 +101,98 @@ def show_mentors(query, context, page=0):
         raise e
 
 
-def show_congratulations(query, context):
-    try:
-        congratulations_response = fetch_congratulations()
-        congratulations = congratulations_response.congratulations
-        buttons = []
+def show_greeting_themes(query, context):
+    buttons = []
+    same_names = set()
 
-        for index, congratulation in enumerate(congratulations):
-            button_text = f'{congratulation}'
-            callback = f'congratulation_{index}'
+    try:
+        postcards_response = fetch_postcards()
+        postcards = postcards_response.postcards
+
+        for postcard in postcards:
+            button_text = postcard.name_ru
+            if button_text not in same_names:
+                same_names.add(button_text)
+                callback = f"theme_{postcard.holidayId}"
+                buttons.append([InlineKeyboardButton(
+                    button_text,
+                    callback_data=callback
+                    )])
+
+        text = ('Выберите тему поздравления')
+        reply_markup = InlineKeyboardMarkup(buttons)
+
+        query.edit_message_text(
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode='Markdown',
+            )
+        
+    except Exception as e:
+        raise e
+
+
+def show_postcards(query, context, holidayId, page=0):
+    buttons = []
+    greetings_per_page = 3
+
+    try:
+        selected_mentor_id = context.user_data.get('selected_mentor')
+        first_name, second_name = get_mentor_name_by_id(selected_mentor_id)
+        postcards_response = fetch_postcards()
+        postcards = postcards_response.postcards
+
+        if not postcards:
+            query.edit_message_text(
+                text='Список поздравлений пока пуст. Попробуйте позже')
+            return
+
+        filtered_postcards = [
+            postcard
+            for postcard in postcards
+            if postcard.holidayId in holidayId
+        ]
+
+        if not filtered_postcards:
+            query.edit_message_text(
+                text='Нет доступных поздравлений для этой темы.')
+            return
+
+        start_index = page * greetings_per_page
+        end_index = start_index + greetings_per_page
+        postcards_to_show = filtered_postcards[start_index:end_index]
+
+        for postcard in postcards_to_show:
+            greeting = f'{postcard.body.replace('#name', first_name)}'
+            words = greeting.split()
+            postcard_id = postcard.id
+            if len(words) > 5:
+                first_five_words = ' '.join(words[:5])
+                button_text = f'{first_five_words} ...'
+            else:
+                button_text = f"{postcard.body}"
+            callback = f'postcard_{postcard_id}'
             buttons.append([InlineKeyboardButton(
                 button_text,
                 callback_data=callback
             )])
+
+        navigation_buttons = []
+
+        if page > 0:
+            navigation_buttons.append(InlineKeyboardButton(
+                '◀️',
+                callback_data=f'postcardpage_{holidayId}_{page - 1}')
+            )
+
+        if end_index < len(filtered_postcards):
+            navigation_buttons.append(InlineKeyboardButton(
+                '▶️',
+                callback_data=f'postcardpage_{holidayId}_{page + 1}')
+            )
+
+        if navigation_buttons:
+            buttons.append(navigation_buttons)
 
         reply_markup = InlineKeyboardMarkup(buttons)
         query.edit_message_text(
@@ -143,19 +223,28 @@ def button_handler(update, context):
     elif query.data.startswith('mentor_'):
         mentor_id = int(query.data.split('_')[1])
         context.user_data['selected_mentor'] = mentor_id
-        show_congratulations(query, context)
+        show_greeting_themes(query, context)
 
-    elif query.data.startswith('congratulation_'):
-        congratulation_index = int(query.data.split('_')[1])
-        congratulations_response = fetch_congratulations()
-        congratulations = congratulations_response.congratulations
-        selected_congratulation = congratulations[congratulation_index]
-
-        context.user_data['selected_congratulation'] = selected_congratulation
+    elif query.data.startswith('postcard_'):
+        postcard_index = int(query.data.split('_')[1])
+        postcards_response = fetch_postcards()
+        postcards = postcards_response.postcards
+        selected_postcard = postcards[postcard_index - 1]
+        context.user_data['selected_postcard'] = selected_postcard.body
         confirm_selection(query, context)
 
+    elif query.data.startswith('theme_'):
+        holiday_id = query.data.split('_')[1]
+        show_postcards(query, context, holiday_id)
+
+    elif query.data.startswith('postcardpage_'):
+        parts = query.data.split('_')
+        holiday_id = parts[1]
+        page = int(parts[2])
+        show_postcards(query, context, holiday_id, page)
+
     elif query.data == 'send':
-        send_congratulation(query, context)
+        send_postcard(query, context)
 
 
 def get_mentor_name_by_id(tg_id):
@@ -163,20 +252,20 @@ def get_mentor_name_by_id(tg_id):
     mentors = mentors_response.mentors
 
     for mentor in mentors:
-        if mentor.tg_id == tg_id:
-            first_name = mentor.first_name
-            last_name = mentor.last_name
-            return first_name, last_name
+        if mentor.tg_chat_id == tg_id:
+            first_name = mentor.name['first']
+            second_name = mentor.name['second']
+            return first_name, second_name
 
 
 def confirm_selection(query, context):
-    selected_congratulation = context.user_data.get('selected_congratulation')
+    selected_postcard = context.user_data.get('selected_postcard')
     chat_id = context.user_data.get('selected_mentor')
-    first_name, last_name = get_mentor_name_by_id(chat_id)
+    first_name, second_name = get_mentor_name_by_id(chat_id)
 
     text = (
-        f'*Вы выбрали ментора*: {first_name} {last_name}\n'
-        f'*Поздравление*: {selected_congratulation}\n'
+        f'*Вы выбрали ментора*: {first_name} {second_name}\n'
+        f'*Поздравление*: {selected_postcard.replace("#name", first_name)}\n'
         'Для отправки поздравления нажмите кнопку *отправить*'
     )
     keyboard = [[InlineKeyboardButton('Отправить', callback_data='send')]]
@@ -189,11 +278,14 @@ def confirm_selection(query, context):
         )
 
 
-def send_congratulation(query, context):
+def send_postcard(query, context):
     chat_id = context.user_data.get('selected_mentor')
-    selected_congratulation = context.user_data.get('selected_congratulation')
+    selected_postcard = context.user_data.get('selected_postcard')
 
-    context.bot.send_message(chat_id=chat_id, text=selected_congratulation)
+    first_name, second_name = get_mentor_name_by_id(chat_id)
+    message = selected_postcard.replace('#name', first_name)
+
+    context.bot.send_message(chat_id=chat_id, text=message)
 
     keyboard = [
         [InlineKeyboardButton(
@@ -261,7 +353,7 @@ def error_handler(update, context):
             else:
                 update.message.reply_text(text, reply_markup=reply_markup)
 
-            return 
+            return
     else:
         print('Произошла непредвиденная ошибка. ', error)
         text = "Произошла непредвиденная ошибка. Попробуйте позже."
