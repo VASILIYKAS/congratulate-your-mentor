@@ -1,0 +1,33 @@
+{
+    "mentors": [
+        {
+            "last_name": "Васильевич",
+            "first_name": "Василий",
+            "tg_id": 1612767132,
+            "user_name": "@STARKAS93",
+            "email": "semen@example.com" 
+        },
+        {
+            "last_name": "Петров Александр Иванович Юрикович III",
+            "first_name": "Петр",
+            "tg_id": 1000000001,
+            "user_name": "@AAAAB",
+            "email": "semen@example.com" 
+        },
+        {
+            "last_name": "Федякин",
+            "first_name": "Евгений",
+            "tg_id": 41878799,
+            "user_name": "@eugenefed",
+            "email": "semen@example.com" 
+        },
+        {
+            "last_name": "Семёнов",
+            "first_name": "Семён",
+            "tg_id": 1000000003,
+            "user_name": "@AAAAD",
+            "email": "semen@example.com" 
+        }
+
+    ]
+}
