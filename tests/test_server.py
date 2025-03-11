@@ -4,7 +4,7 @@ import json
 
 class MyHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
-           
+
         if self.path == '/empty':
             file_path = 'tests/test_data/empty.json'
 
@@ -19,32 +19,32 @@ class MyHandler(SimpleHTTPRequestHandler):
 
         elif self.path == '/extra_data':
             file_path = 'tests/test_data/mentors_data_extra.json'
-        
+
         elif self.path == '/internal_server_error':
             self.send_response(500)
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"error": "Internal Server Error"}')
             return
-        
+
         elif self.path == '/bad_request':
             self.send_response(400)
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"error": "Bad Request"}')
             return
-        
+
         else:
             self.send_response(404)
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"error": "File not found"}')
             return
-    
+
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
- 
+
         with open(file_path, 'r', encoding='utf-8') as file_:
             data = json.load(file_)
             self.wfile.write(json.dumps(data).encode('utf-8'))
