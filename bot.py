@@ -117,7 +117,7 @@ def show_greeting_themes(query, context):
                 buttons.append([InlineKeyboardButton(
                     button_text,
                     callback_data=callback
-                    )])
+                )])
 
         text = ('Выберите тему поздравления')
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -126,8 +126,8 @@ def show_greeting_themes(query, context):
             text=text,
             reply_markup=reply_markup,
             parse_mode='Markdown',
-            )
-        
+        )
+
     except Exception as e:
         raise e
 
@@ -275,7 +275,7 @@ def confirm_selection(query, context):
         text=text,
         reply_markup=reply_markup,
         parse_mode='Markdown',
-        )
+    )
 
 
 def send_postcard(query, context):
@@ -291,7 +291,7 @@ def send_postcard(query, context):
         [InlineKeyboardButton(
             'Поздравить другого ментора',
             callback_data='show_mentors'
-            )]
+        )]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -330,7 +330,7 @@ def error_handler(update, context):
     elif isinstance(error, BadRequest):
         if 'Chat not found' in str(error):
             print(f'Выбранный пользователь {first_name} {last_name} '
-                  'не взаимодействовал с ботом. ',
+                  'не взаимодействовал с ботом.',
                   error)
             text = (
                 'Пользователь ещё не взаимодействовал с ботом. '
@@ -341,7 +341,7 @@ def error_handler(update, context):
                 [InlineKeyboardButton(
                     "Выбрать другого ментора",
                     callback_data='show_mentors'
-                    )]
+                )]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -349,7 +349,35 @@ def error_handler(update, context):
                 update.callback_query.message.reply_text(
                     text,
                     reply_markup=reply_markup
-                    )
+                )
+            else:
+                update.message.reply_text(text, reply_markup=reply_markup)
+
+            return
+    
+    elif isinstance(error, BadRequest):
+        if 'Forbidden: bot was blocked by the user' in str(error):
+            print(f'Выбранный пользователь {first_name} {last_name} '
+                  'заблокировал бота.',
+                  error)
+            text = (
+                'Пользователь добавил бота в бан 😢 '
+                'попробуйте убедить его разблокировать бота 😇'
+            )
+
+            keyboard = [
+                [InlineKeyboardButton(
+                    "Выбрать другого ментора",
+                    callback_data='show_mentors'
+                )]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+            if update and update.callback_query:
+                update.callback_query.message.reply_text(
+                    text,
+                    reply_markup=reply_markup
+                )
             else:
                 update.message.reply_text(text, reply_markup=reply_markup)
 
@@ -369,6 +397,10 @@ def main():
     load_dotenv()
 
     TOKEN = os.environ['TG_BOT_TOKEN']
+    if not TOKEN:
+        print('Ошибка: Не указан TG_BOT_TOKEN.'
+              'Убедитесь, что он задан в переменных окружения.')
+        return
 
     updater = Updater(TOKEN, use_context=True)
 
