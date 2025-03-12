@@ -1,0 +1,302 @@
+{
+  "mentors": [
+    {
+      "id": 1,
+      "name": {
+        "first": "Евгений",
+        "second": "Devman"
+      },
+      "tg_username": "@eugene_dev",
+      "tg_chat_id": 41878799,
+      "bday": "1991-02-23"
+    },
+    {
+      "id": 2,
+      "name": {
+        "first": "Ильмир",
+        "second": "Devman"
+      },
+      "tg_username": "@ilmir_dev",
+      "tg_chat_id": 6467718221
+    },
+    {
+      "id": 3,
+      "name": {
+        "first": "Нурбек",
+        "second": "Devman"
+      },
+      "tg_username": "@nurbek_dev",
+      "tg_chat_id": 335075762,
+      "bday": "1991-02-23"
+    },
+    {
+      "id": 4,
+      "name": {
+        "first": "Александр",
+        "second": "Кузнецов"
+      },
+      "tg_username": "@Al-kyz",
+      "tg_chat_id": 335000000
+    },
+    {
+      "id": 5,
+      "name": {
+        "first": "Иван",
+        "second": " Петряков"
+      },
+      "tg_username": "@i_petr",
+      "bday": "1991-02-23",
+      "tg_chat_id": 335000001
+    },
+    {
+      "id": 6,
+      "name": {
+        "first": "Амир",
+        "second": "Амиров"
+      },
+      "tg_username": "@aarr",
+      "bday": "1995-09-01",
+      "tg_chat_id": 335000002
+    },
+    {
+      "id": 7,
+      "name": {
+        "first": "Светлана",
+        "second": "Кузнецова"
+      },
+      "tg_username": "@svetlana_kuz",
+      "bday": "1988-04-15",
+      "tg_chat_id": 335000003
+    },
+    {
+      "id": 8,
+      "name": {
+        "first": "Дмитрий",
+        "second": "Сидоров"
+      },
+      "tg_username": "@dmitriy_sid",
+      "bday": "1985-11-30",
+      "tg_chat_id": 335000004
+    },
+    {
+      "id": 9,
+      "name": {
+        "first": "Наталья",
+        "second": "Павлова"
+      },
+      "tg_username": "@natalya_pav",
+      "bday": "1992-06-20",
+      "tg_chat_id": 335000005
+    },
+    {
+      "id": 10,
+      "name": {
+        "first": "Алексей",
+        "second": "Иванов"
+      },
+      "tg_username": "@alexey_ivan",
+      "bday": "1987-01-12",
+      "tg_chat_id": 335000006
+    },
+    {
+      "id": 11,
+      "name": {
+        "first": "Елена",
+        "second": "Семёнова"
+      },
+      "tg_username": "@elena_semy",
+      "bday": "1989-05-05",
+      "tg_chat_id": 335000007
+    },
+    {
+      "id": 12,
+      "name": {
+        "first": "Анастасия",
+        "second": "Григорьева"
+      },
+      "tg_username": "@anastasia_gri",
+      "bday": "1990-03-18",
+      "tg_chat_id": 335000008
+    },
+    {
+      "id": 13,
+      "name": {
+        "first": "Максим",
+        "second": "Лебедев"
+      },
+      "tg_username": "@maxim_lebed",
+      "bday": "1986-07-29",
+      "tg_chat_id": 335000009
+    },
+    {
+      "id": 14,
+      "name": {
+        "first": "Ольга",
+        "second": "Николаева"
+      },
+      "tg_username": "@olga_nik",
+      "bday": "1993-10-10",
+      "tg_chat_id": 335000010
+    },
+    {
+      "id": 15,
+      "name": {
+        "first": "Игорь",
+        "second": "Соловьёв"
+      },
+      "tg_username": "@igor_sol",
+      "bday": "1984-08-28",
+      "tg_chat_id": 335000011
+    },
+    {
+      "id": 16,
+      "name": {
+        "first": "Татьяна",
+        "second": "Федорова"
+      },
+      "tg_username": "@tatiana_fed",
+      "bday": "1991-12-12",
+      "tg_chat_id": 335000012
+    },
+    {
+      "id": 17,
+      "name": {
+        "first": "Павел",
+        "second": "Ковалев"
+      },
+      "tg_username": "@pavel_kov",
+      "bday": "1983-09-19",
+      "tg_chat_id": 335000013
+    },
+    {
+      "id": 18,
+      "name": {
+        "first": "Евгения",
+        "second": "Морозова"
+      },
+      "tg_username": "@evgeniya_mor",
+      "bday": "1994-02-05",
+      "tg_chat_id": 335000014
+    },
+    {
+      "id": 19,
+      "name": {
+        "first": "Сергей",
+        "second": "Тихонов"
+      },
+      "tg_username": "@sergey_tikh",
+      "bday": "1987-04-21",
+      "tg_chat_id": 335000015
+    },
+    {
+      "id": 20,
+      "name": {
+        "first": "Мария",
+        "second": "Савельева"
+      },
+      "tg_username": "@maria_save",
+      "bday": "1990-11-11",
+      "tg_chat_id": 335000016
+    },
+    {
+      "id": 21,
+      "name": {
+        "first": "Артем",
+        "second": "Кузьмин"
+      },
+      "tg_username": "@artem_kuz",
+      "bday": "1989-03-15",
+      "tg_chat_id": 335000017
+    },
+    {
+      "id": 22,
+      "name": {
+        "first": "Ксения",
+        "second": "Зайцева"
+      },
+      "tg_username": "@kseniya_zay",
+      "bday": "1992-05-30",
+      "tg_chat_id": 335000018
+    },
+    {
+      "id": 23,
+      "name": {
+        "first": "Роман",
+        "second": "Сидоренко"
+      },
+      "tg_username": "@roman_sid",
+      "bday": "1985-07-07",
+      "tg_chat_id": 335000019
+    },
+    {
+      "id": 24,
+      "name": {
+        "first": "Лариса",
+        "second": "Петрова"
+      },
+      "tg_username": "@larisa_pet",
+      "bday": "1991-08-18",
+      "tg_chat_id": 335000020
+    },
+    {
+      "id": 25,
+      "name": {
+        "first": "Денис",
+        "second": "Васильев"
+      },
+      "tg_username": "@denis_vas",
+      "bday": "1986-01-25",
+      "tg_chat_id": 335000021
+    },
+    {
+      "id": 26,
+      "name": {
+        "first": "Екатерина",
+        "second": "Громова"
+      },
+      "tg_username": "@ekaterina_gro",
+      "bday": "1993-10-02",
+      "tg_chat_id": 335000022
+    },
+    {
+      "id": 27,
+      "name": {
+        "first": "Александр",
+        "second": "Калинин"
+      },
+      "tg_username": "@alexandr_kal",
+      "bday": "1988-06-14",
+      "tg_chat_id": 335000023
+    },
+    {
+      "id": 28,
+      "name": {
+        "first": "Нина",
+        "second": "Романова"
+      },
+      "tg_username": "@nina_rom",
+      "bday": "1990-04-08",
+      "tg_chat_id": 335000024
+    },
+    {
+      "id": 29,
+      "name": {
+        "first": "Виктор",
+        "second": "Гусев"
+      },
+      "tg_username": "@viktor_gus",
+      "bday": "1984-12-12",
+      "tg_chat_id": 335000025
+    },
+    {
+      "id": 30,
+      "name": {
+        "first": "Юлия",
+        "second": "Калинина"
+      },
+      "tg_username": "@yulia_kal",
+      "bday": "1995-09-29",
+      "tg_chat_id": 335000026
+    }      
+  ]
+}
