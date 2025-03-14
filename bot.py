@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import BotCommand
 from telegram.error import BadRequest
 from libs.api_client import get_mentors_or_congratulations
 from pydantic import ValidationError
@@ -28,6 +29,14 @@ from tests.test_urls import (
 MENTORS = '/mentors'
 POSTCARDS = '/postcards'
 BASE_URL = 'https://my-json-server.typicode.com/devmanorg/congrats-mentor'
+
+commands = [
+    BotCommand("start", "Запустить бота"),
+]
+
+
+def set_menu_commands(bot):
+    bot.set_my_commands(commands)
 
 
 def start(update, context):
@@ -508,6 +517,8 @@ def main(server):
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CallbackQueryHandler(button_handler))
     dp.add_error_handler(error_handler)
+
+    set_menu_commands(updater.bot)
 
     updater.start_polling()
 
