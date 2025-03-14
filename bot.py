@@ -1,19 +1,46 @@
 import os
 import httpx
 import json
+import argparse
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
-from fetch_data import fetch_mentors, fetch_postcards
+from libs.api_client import get_mentors_or_congratulations
 from pydantic import ValidationError
+from tests.test_urls import (
+    test_url_empty_json,
+    test_url_3_mentors_5_postcards,
+    test_url_extra_collection,
+    test_url_extra_fields,
+    test_url_file_not_found,
+    test_url_i_am_mentor,
+    test_url_invalid_json,
+    test_url_long_name_postcard,
+    test_url_many_mentors_postcards,
+    test_url_missing_fields,
+    test_url_template_name,
+    test_url_wrong_types
+)
+
+
+MENTORS = '/mentors'
+POSTCARDS = '/postcards'
+BASE_URL = 'https://my-json-server.typicode.com/devmanorg/congrats-mentor'
 
 
 def start(update, context):
-    mentors_response = fetch_mentors()
+    base_url = context.bot_data.get('base_url', BASE_URL)
+    mentors_response = get_mentors_or_congratulations(base_url, MENTORS)
     mentors = mentors_response.mentors
     user_chat_id = update.message.chat_id
+
+    if not mentors:
+        update.message.reply_text(
+            text='Список менторов пока пуст. Попробуйте позже.')
+        return
+
     for mentor in mentors:
         if user_chat_id == mentor.tg_chat_id:
             keyboard = [
@@ -51,21 +78,17 @@ def start(update, context):
 def show_mentors(query, context, page=0):
     buttons = []
     mentors_per_page = 10
+    base_url = context.bot_data.get('base_url', BASE_URL)
     try:
-        mentors_response = fetch_mentors()
+        mentors_response = get_mentors_or_congratulations(base_url, MENTORS)
         mentors = mentors_response.mentors
-
-        if not mentors:
-            query.edit_message_text(
-                text='Список менторов пока пуст. Попробуйте позже')
-            return
 
         start_index = page * mentors_per_page
         end_index = start_index + mentors_per_page
         mentors_to_show = mentors[start_index:end_index]
 
         for mentor in mentors_to_show:
-            full_name = f"{mentor.name['first']} {mentor.name['second']}"
+            full_name = f"{mentor.name.first} {mentor.name.second}"
             username = mentor.tg_username
             words = full_name.split()
             if len(words) > 2:
@@ -104,9 +127,13 @@ def show_mentors(query, context, page=0):
 def show_greeting_themes(query, context):
     buttons = []
     same_names = set()
+    base_url = context.bot_data.get('base_url', BASE_URL)
 
     try:
-        postcards_response = fetch_postcards()
+        postcards_response = get_mentors_or_congratulations(
+            base_url,
+            POSTCARDS
+        )
         postcards = postcards_response.postcards
 
         for postcard in postcards:
@@ -135,11 +162,18 @@ def show_greeting_themes(query, context):
 def show_postcards(query, context, holidayId, page=0):
     buttons = []
     greetings_per_page = 3
+    base_url = context.bot_data.get('base_url', BASE_URL)
 
     try:
         selected_mentor_id = context.user_data.get('selected_mentor')
-        first_name, second_name = get_mentor_name_by_id(selected_mentor_id)
-        postcards_response = fetch_postcards()
+        first_name, second_name = get_mentor_name_by_id(
+            selected_mentor_id,
+            base_url
+        )
+        postcards_response = get_mentors_or_congratulations(
+            base_url,
+            POSTCARDS
+        )
         postcards = postcards_response.postcards
 
         if not postcards:
@@ -163,15 +197,22 @@ def show_postcards(query, context, holidayId, page=0):
         postcards_to_show = filtered_postcards[start_index:end_index]
 
         for postcard in postcards_to_show:
-            greeting = f'{postcard.body.replace('#name', first_name)}'
+            if isinstance(postcard.body, str):
+                greeting = f'{postcard.body.replace('#name', first_name)}'
+            elif isinstance(postcard.body, list):
+                greeting = [
+                    line.replace('#name', first_name) for line in postcard.body
+                ]
+                greeting = "\n".join(greeting)
+
             words = greeting.split()
-            postcard_id = postcard.id
             if len(words) > 5:
                 first_five_words = ' '.join(words[:5])
                 button_text = f'{first_five_words} ...'
             else:
                 button_text = f"{postcard.body}"
-            callback = f'postcard_{postcard_id}'
+
+            callback = f'postcard_{postcard.id}'
             buttons.append([InlineKeyboardButton(
                 button_text,
                 callback_data=callback
@@ -226,12 +267,23 @@ def button_handler(update, context):
         show_greeting_themes(query, context)
 
     elif query.data.startswith('postcard_'):
-        postcard_index = int(query.data.split('_')[1])
-        postcards_response = fetch_postcards()
+        postcard_id = int(query.data.split('_')[1])
+        base_url = context.bot_data.get('base_url', BASE_URL)
+        postcards_response = get_mentors_or_congratulations(
+            base_url,
+            POSTCARDS
+        )
         postcards = postcards_response.postcards
-        selected_postcard = postcards[postcard_index - 1]
-        context.user_data['selected_postcard'] = selected_postcard.body
-        confirm_selection(query, context)
+
+        selected_postcard = None
+        for postcard in postcards:
+            if postcard.id == postcard_id:
+                selected_postcard = postcard
+                break
+
+        if selected_postcard:
+            context.user_data['selected_postcard'] = selected_postcard.body
+            confirm_selection(query, context)
 
     elif query.data.startswith('theme_'):
         holiday_id = query.data.split('_')[1]
@@ -247,25 +299,31 @@ def button_handler(update, context):
         send_postcard(query, context)
 
 
-def get_mentor_name_by_id(tg_id):
-    mentors_response = fetch_mentors()
+def get_mentor_name_by_id(tg_id, base_url):
+    mentors_response = get_mentors_or_congratulations(base_url, MENTORS)
     mentors = mentors_response.mentors
 
     for mentor in mentors:
         if mentor.tg_chat_id == tg_id:
-            first_name = mentor.name['first']
-            second_name = mentor.name['second']
+            first_name = mentor.name.first
+            second_name = mentor.name.second
             return first_name, second_name
 
 
 def confirm_selection(query, context):
     selected_postcard = context.user_data.get('selected_postcard')
     chat_id = context.user_data.get('selected_mentor')
-    first_name, second_name = get_mentor_name_by_id(chat_id)
+    base_url = context.bot_data.get('base_url', BASE_URL)
+    first_name, second_name = get_mentor_name_by_id(chat_id, base_url)
+
+    if isinstance(selected_postcard, str):
+        greeting_text = selected_postcard.replace('#name', first_name)
+    elif isinstance(selected_postcard, list):
+        greeting_text = "".join(selected_postcard).replace('#name', first_name)
 
     text = (
         f'*Вы выбрали ментора*: {first_name} {second_name}\n'
-        f'*Поздравление*: {selected_postcard.replace("#name", first_name)}\n'
+        f'*Поздравление*: {greeting_text}\n'
         'Для отправки поздравления нажмите кнопку *отправить*'
     )
     keyboard = [[InlineKeyboardButton('Отправить', callback_data='send')]]
@@ -281,11 +339,23 @@ def confirm_selection(query, context):
 def send_postcard(query, context):
     chat_id = context.user_data.get('selected_mentor')
     selected_postcard = context.user_data.get('selected_postcard')
+    base_url = context.bot_data.get('base_url', BASE_URL)
 
-    first_name, second_name = get_mentor_name_by_id(chat_id)
-    message = selected_postcard.replace('#name', first_name)
+    first_name, second_name = get_mentor_name_by_id(chat_id, base_url)
 
-    context.bot.send_message(chat_id=chat_id, text=message)
+    greetings = []
+
+    for postcard in selected_postcard:
+        if isinstance(postcard, str):
+            greetings.append(postcard.replace('#name', first_name))
+        elif isinstance(postcard, list):
+            greetings.extend([
+                line.replace('#name', first_name) for line in postcard
+            ])
+
+    greeting_text = "\n".join(greetings)
+
+    context.bot.send_message(chat_id=chat_id, text=greeting_text)
 
     keyboard = [
         [InlineKeyboardButton(
@@ -296,8 +366,10 @@ def send_postcard(query, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     query.edit_message_text(
-        text="""Поздравление успешно отправлено! 🎉
-Хотите поздравить ещё одного ментора?""",
+        text=(
+            'Поздравление успешно отправлено! 🎉'
+            'Хотите поздравить ещё одного ментора?'
+        ),
         reply_markup=reply_markup,
         parse_mode='Markdown',
     )
@@ -305,23 +377,24 @@ def send_postcard(query, context):
 
 def error_handler(update, context):
     error = context.error
-    chat_id = context.user_data.get('selected_mentor')
-    first_name, last_name = get_mentor_name_by_id(chat_id)
 
-    if isinstance(error, httpx.ConnectError):
+    if isinstance(error, ValidationError):
+        print('Ошибка формата данных ', error)
+        text = 'Что-то пошло не так. Попробуйте позже.'
+
+    elif isinstance(error, httpx.ConnectError):
         print('Ошибка соединения: не удалось подключиться к серверу. ', error)
-        text = """Ошибка соединения: не удалось подключиться к серверу.
-        Попробуйте позже."""
+        text = (
+            'Ошибка соединения: не удалось подключиться к серверу. '
+            'Попробуйте позже.'
+        )
 
     elif isinstance(error, httpx.HTTPError):
         print('Произошла ошибка при выполнении запроса. ', error)
-        text = """Произошла ошибка при выполнении запроса.
-        Попробуйте позже."""
-
-    elif isinstance(error, ValidationError):
-        print('Ошибка формата данных ', error)
-        text = "Что-то пошло не так. Попробуйте позже."
-
+        text = (
+            'Произошла ошибка при выполнении запроса. '
+            'Попробуйте позже.'
+        )
     elif isinstance(error, json.JSONDecodeError):
         print('Ошибка формата JSON. Сервер вернул некорректные данные. ',
               error)
@@ -329,8 +402,7 @@ def error_handler(update, context):
 
     elif isinstance(error, BadRequest):
         if 'Chat not found' in str(error):
-            print(f'Выбранный пользователь {first_name} {last_name} '
-                  'не взаимодействовал с ботом.',
+            print('Выбранный пользователь не взаимодействовал с ботом.',
                   error)
             text = (
                 'Пользователь ещё не взаимодействовал с ботом. '
@@ -352,13 +424,11 @@ def error_handler(update, context):
                 )
             else:
                 update.message.reply_text(text, reply_markup=reply_markup)
-
             return
-    
+
     elif isinstance(error, BadRequest):
         if 'Forbidden: bot was blocked by the user' in str(error):
-            print(f'Выбранный пользователь {first_name} {last_name} '
-                  'заблокировал бота.',
+            print('Выбранный пользователь заблокировал бота.',
                   error)
             text = (
                 'Пользователь добавил бота в бан 😢 '
@@ -388,12 +458,11 @@ def error_handler(update, context):
 
     if update and update.message:
         update.message.reply_text(text)
-
     elif update and update.callback_query:
         update.callback_query.message.reply_text(text)
 
 
-def main():
+def main(server):
     load_dotenv()
 
     TOKEN = os.environ['TG_BOT_TOKEN']
@@ -402,9 +471,39 @@ def main():
               'Убедитесь, что он задан в переменных окружения.')
         return
 
+    if server == 'empty':
+        base_url = test_url_empty_json
+    elif server == 'invalid':
+        base_url = test_url_invalid_json
+    elif server == 'missing_fields':
+        base_url = test_url_missing_fields
+    elif server == 'extra_fields':
+        base_url = test_url_extra_fields
+    elif server == 'extra_collection':
+        base_url = test_url_extra_collection
+    elif server == 'file_not_found':
+        base_url = test_url_file_not_found
+    elif server == 'i_am_mentor':
+        base_url = test_url_i_am_mentor
+    elif server == 'long_name_postcard':
+        base_url = test_url_long_name_postcard
+    elif server == 'many_mentors_postcards':
+        base_url = test_url_many_mentors_postcards
+    elif server == 'template_name':
+        base_url = test_url_template_name
+    elif server == 'wrong_types':
+        base_url = test_url_wrong_types
+    elif server == '3_mentors_5_postcards':
+        base_url = test_url_3_mentors_5_postcards
+
+    else:
+        base_url = BASE_URL
+
     updater = Updater(TOKEN, use_context=True)
 
     dp = updater.dispatcher
+
+    dp.bot_data['base_url'] = base_url
 
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CallbackQueryHandler(button_handler))
@@ -416,4 +515,23 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        description='Запуск бота с тестовым или продакшн сервером.'
+    )
+    parser.add_argument('--server', choices=[
+        'empty', 'invalid', 'missing_fields',
+        'extra_fields', 'extra_collection',
+        'file_not_found', 'i_am_mentor',
+        'long_name_postcard', 'many_mentors_postcards',
+        'template_name', 'wrong_types',
+        '3_mentors_5_postcards'
+        ],
+        help=(
+            'Укажите название случая для тестового сервера. '
+            'Например: --server empty'
+            'По умолчанию используется продакшн сервер.'
+        )
+    )
+
+    args = parser.parse_args()
+    main(args.server)
