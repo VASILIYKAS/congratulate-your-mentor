@@ -5,6 +5,55 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 class MyHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
+        if self.path == '/': 
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            welcome_message = """
+                <html>
+                    <meta charset="UTF-8">
+                    <head><title>Тестовый сервер</title></head>
+                    <body>
+                        <h1>Добро пожаловать на тестовый сервер!</h1>
+                        <p>Доступные эндпоинты:</p>
+                        <ul>
+                            <li><a href="/empty_json/mentors">/empty_json/mentors</a></li>
+                            <li><a href="/empty_json/postcards">/empty_json/postcards</a></li>
+                            <li><a href="/invalid_json/mentors">/invalid_json/mentors</a></li>
+                            <li><a href="/invalid_json/postcards">/invalid_json/postcards</a></li>
+                            <li><a href="/3_mentors_5_postcards/mentors">/3_mentors_5_postcards/mentors</a></li>
+                            <li><a href="/3_mentors_5_postcards/postcards">/3_mentors_5_postcards/postcards</a></li>
+                            <li><a href="/extra_collection/mentors">/extra_collection/mentors</a></li>
+                            <li><a href="/extra_collection/postcards">/extra_collection/postcards</a></li>
+                            <li><a href="/extra_fields/mentors">/extra_fields/mentors</a></li>
+                            <li><a href="/extra_fields/postcards">/extra_fields/postcards</a></li>
+                            <li><a href="/i_am_mentor/mentors">/i_am_mentor/mentors</a></li>
+                            <li><a href="/i_am_mentor/postcards">/i_am_mentor/postcards</a></li>
+                            <li><a href="/long_name_postcard/mentors">/long_name_postcard/mentors</a></li>
+                            <li><a href="/long_name_postcard/postcards">/long_name_postcard/postcards</a></li>
+                            <li><a href="/many_mentors_postcards/mentors">/many_mentors_postcards/mentors</a></li>
+                            <li><a href="/many_mentors_postcards/postcards">/many_mentors_postcards/postcards</a></li>
+                            <li><a href="/missing_fields/mentors">/missing_fields/mentors</a></li>
+                            <li><a href="/missing_fields/postcards">/missing_fields/postcards</a></li>
+                            <li><a href="/template_name/mentors">/template_name/mentors</a></li>
+                            <li><a href="/template_name/postcards">/template_name/postcards</a></li>
+                            <li><a href="/wrong_types/mentors">/wrong_types/mentors</a></li>
+                            <li><a href="/wrong_types/postcards">/wrong_types/postcards</a></li>
+                            <li><a href="/file_not_found/mentors">/file_not_found/mentors</a></li>
+                            <li><a href="/file_not_found/postcards">/file_not_found/postcards</a></li>
+                            <li><a href="/internal_server_error/mentors">/internal_server_error/mentors</a></li>
+                            <li><a href="/bad_request/mentors">/bad_request/mentors</a></li>
+                        </ul>
+                    </body>
+                </html>
+                """
+            self.wfile.write(welcome_message.encode('utf-8'))
+            return
+
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+
         file_path = None
 
         if self.path == '/empty_json/mentors':
