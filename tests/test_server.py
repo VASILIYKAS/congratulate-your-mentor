@@ -5,7 +5,8 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 class MyHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/': 
+        print(f"Requested path: {self.path}")
+        if self.path == '/':
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
@@ -49,10 +50,6 @@ class MyHandler(SimpleHTTPRequestHandler):
                 """
             self.wfile.write(welcome_message.encode('utf-8'))
             return
-
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
 
         file_path = None
 
@@ -145,12 +142,11 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wfile.write(b'{"error": "File not found"}')
             return
 
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
-
         with open(file_path, 'r', encoding='utf-8') as file_:
             data = json.load(file_)
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
             self.wfile.write(json.dumps(data).encode('utf-8'))
 
 
