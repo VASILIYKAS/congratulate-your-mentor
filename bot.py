@@ -4,7 +4,7 @@ import json
 import argparse
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
-from telegram.ext import CallbackQueryHandler
+from telegram.ext import CallbackQueryHandler, PicklePersistence
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import BotCommand
 from telegram.error import BadRequest
@@ -30,58 +30,91 @@ MENTORS = '/mentors'
 POSTCARDS = '/postcards'
 BASE_URL = 'https://my-json-server.typicode.com/devmanorg/congrats-mentor'
 
-commands = [
-    BotCommand("start", "Запустить бота"),
-]
-
 
 def set_menu_commands(bot):
+    commands = [
+        BotCommand("start", "Запустить бота"),
+    ]
     bot.set_my_commands(commands)
 
 
 def start(update, context):
-    base_url = context.bot_data.get('base_url', BASE_URL)
-    mentors_response = get_mentors_or_congratulations(base_url, MENTORS)
-    mentors = mentors_response.mentors
-    user_chat_id = update.message.chat_id
+    step = context.user_data.get('step')
 
-    if not mentors:
+    if step == 'mentor_chosen':
         update.message.reply_text(
-            text='Список менторов пока пуст. Попробуйте позже.')
+            "Вы остановились на выборе ментора. "
+            "Выберете тему поздравления."
+        )
+
+        show_greeting_themes(update, context)
         return
 
-    for mentor in mentors:
-        if user_chat_id == mentor.tg_chat_id:
-            keyboard = [
-                [InlineKeyboardButton('Выбрать ментора',
-                                      callback_data='show_mentors')],
-                [InlineKeyboardButton('Завершить',
-                                      callback_data='end')],
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            update.message.reply_text(
-                "Привет! Вижу вы ментор.\n"
-                "Если вы хотите поздравить другого ментора, "
-                "нажмите кнопку выбора *ментора*.\n"
-                "Для завершения работы бота, нажмите кнопку *завершить*.",
-                reply_markup=reply_markup,
-                parse_mode='Markdown',
-            )
-            return
+    elif step == 'theme_chosen':
+        holidayId = context.user_data.get('holiday_id')
+        update.message.reply_text(
+            "Вы остановились на выборе тематике поздравления. "
+            "Выберите поздравление."
+        )
+
+        show_postcards(update, context, holidayId)
+        return
+
+    elif step == 'mentor_and_postcard_chosen':
+        update.message.reply_text(
+            "Вы остановились на выборе поздравления. "
+            "Проверьте ваш выбор."
+        )
+
+        confirm_selection(update, context)
+        return
+
     else:
-        keyboard = [
-            [InlineKeyboardButton('Выбрать ментора',
-                                  callback_data='show_mentors')],
-        ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text(
-        "Привет!\n"
-        "Я ваш бот для поздравления менторов.\n"
-        "Для того что бы выбрать ментора, "
-        "нажмите кнопку выбора *ментора*.\n",
-        reply_markup=reply_markup,
-        parse_mode='Markdown',
-    )
+        base_url = context.bot_data.get('base_url', BASE_URL)
+        mentors_response = get_mentors_or_congratulations(base_url, MENTORS)
+        mentors = mentors_response.mentors
+        user_chat_id = update.message.chat_id
+
+        if not mentors:
+            update.message.reply_text(
+                text='Список менторов пока пуст. Попробуйте позже.')
+            return
+
+        for mentor in mentors:
+            if user_chat_id == mentor.tg_chat_id:
+                keyboard = [
+                    [InlineKeyboardButton(
+                        'Выбрать ментора',
+                        callback_data='show_mentors')],
+                    [InlineKeyboardButton(
+                        'Завершить',
+                        callback_data='end')],
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                update.message.reply_text(
+                    "Привет! Вижу вы ментор.\n"
+                    "Если вы хотите поздравить другого ментора, "
+                    "нажмите кнопку выбора *ментора*.\n"
+                    "Для завершения работы бота, нажмите кнопку *завершить*.",
+                    reply_markup=reply_markup,
+                    parse_mode='Markdown',
+                )
+                return
+        else:
+            keyboard = [
+                [InlineKeyboardButton(
+                    'Выбрать ментора',
+                    callback_data='show_mentors')],
+            ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text(
+            "Привет!\n"
+            "Я ваш бот для поздравления менторов.\n"
+            "Для того что бы выбрать ментора, "
+            "нажмите кнопку выбора *ментора*.\n",
+            reply_markup=reply_markup,
+            parse_mode='Markdown',
+        )
 
 
 def show_mentors(query, context, page=0):
@@ -133,7 +166,12 @@ def show_mentors(query, context, page=0):
         raise e
 
 
-def show_greeting_themes(query, context):
+def show_greeting_themes(update_or_query, context):
+    if hasattr(update_or_query, 'message'):
+        reply_func = update_or_query.message.reply_text
+    else:
+        reply_func = update_or_query.edit_message_text
+
     buttons = []
     same_names = set()
     base_url = context.bot_data.get('base_url', BASE_URL)
@@ -146,29 +184,29 @@ def show_greeting_themes(query, context):
         postcards = postcards_response.postcards
 
         for postcard in postcards:
-            button_text = postcard.name_ru
-            if button_text not in same_names:
-                same_names.add(button_text)
+            if postcard.name_ru not in same_names:
+                same_names.add(postcard.name_ru)
                 callback = f"theme_{postcard.holidayId}"
                 buttons.append([InlineKeyboardButton(
-                    button_text,
+                    postcard.name_ru,
                     callback_data=callback
                 )])
 
-        text = ('Выберите тему поздравления')
+        text = 'Выберите тему поздравления'
         reply_markup = InlineKeyboardMarkup(buttons)
 
-        query.edit_message_text(
-            text=text,
-            reply_markup=reply_markup,
-            parse_mode='Markdown',
-        )
+        reply_func(text=text, reply_markup=reply_markup)
 
     except Exception as e:
         raise e
 
 
-def show_postcards(query, context, holidayId, page=0):
+def show_postcards(update_or_query, context, holidayId, page=0):
+    if hasattr(update_or_query, 'message'):
+        reply_func = update_or_query.message.reply_text
+    else:
+        reply_func = update_or_query.edit_message_text
+
     buttons = []
     greetings_per_page = 3
     base_url = context.bot_data.get('base_url', BASE_URL)
@@ -186,7 +224,7 @@ def show_postcards(query, context, holidayId, page=0):
         postcards = postcards_response.postcards
 
         if not postcards:
-            query.edit_message_text(
+            update_or_query.edit_message_text(
                 text='Список поздравлений пока пуст. Попробуйте позже')
             return
 
@@ -197,7 +235,7 @@ def show_postcards(query, context, holidayId, page=0):
         ]
 
         if not filtered_postcards:
-            query.edit_message_text(
+            update_or_query.edit_message_text(
                 text='Нет доступных поздравлений для этой темы.')
             return
 
@@ -245,7 +283,7 @@ def show_postcards(query, context, holidayId, page=0):
             buttons.append(navigation_buttons)
 
         reply_markup = InlineKeyboardMarkup(buttons)
-        query.edit_message_text(
+        reply_func(
             text='Выберите поздравление:',
             reply_markup=reply_markup
         )
@@ -271,6 +309,7 @@ def button_handler(update, context):
         show_mentors(query, context, page)
 
     elif query.data.startswith('mentor_'):
+        context.user_data['step'] = 'mentor_chosen'
         mentor_id = int(query.data.split('_')[1])
         context.user_data['selected_mentor'] = mentor_id
         show_greeting_themes(query, context)
@@ -291,11 +330,14 @@ def button_handler(update, context):
                 break
 
         if selected_postcard:
+            context.user_data['step'] = 'mentor_and_postcard_chosen'
             context.user_data['selected_postcard'] = selected_postcard.body
             confirm_selection(query, context)
 
     elif query.data.startswith('theme_'):
         holiday_id = query.data.split('_')[1]
+        context.user_data['step'] = 'theme_chosen'
+        context.user_data['holiday_id'] = holiday_id
         show_postcards(query, context, holiday_id)
 
     elif query.data.startswith('postcardpage_'):
@@ -319,7 +361,12 @@ def get_mentor_name_by_id(tg_id, base_url):
             return first_name, second_name
 
 
-def confirm_selection(query, context):
+def confirm_selection(update_or_query, context):
+    if hasattr(update_or_query, 'message'):
+        reply_func = update_or_query.message.reply_text
+    else:
+        reply_func = update_or_query.edit_message_text
+
     selected_postcard = context.user_data.get('selected_postcard')
     chat_id = context.user_data.get('selected_mentor')
     base_url = context.bot_data.get('base_url', BASE_URL)
@@ -338,7 +385,7 @@ def confirm_selection(query, context):
     keyboard = [[InlineKeyboardButton('Отправить', callback_data='send')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    query.edit_message_text(
+    reply_func(
         text=text,
         reply_markup=reply_markup,
         parse_mode='Markdown',
@@ -382,6 +429,8 @@ def send_postcard(query, context):
         reply_markup=reply_markup,
         parse_mode='Markdown',
     )
+
+    context.user_data.clear()
 
 
 def error_handler(update, context):
@@ -433,6 +482,8 @@ def error_handler(update, context):
                 )
             else:
                 update.message.reply_text(text, reply_markup=reply_markup)
+
+            context.user_data.clear()
             return
 
     elif isinstance(error, BadRequest):
@@ -460,6 +511,7 @@ def error_handler(update, context):
             else:
                 update.message.reply_text(text, reply_markup=reply_markup)
 
+            context.user_data.clear()
             return
     else:
         print('Произошла непредвиденная ошибка. ', error)
@@ -479,6 +531,9 @@ def main(server):
         print('Ошибка: Не указан TG_BOT_TOKEN.'
               'Убедитесь, что он задан в переменных окружения.')
         return
+
+    save_data = PicklePersistence(filename='data.pickle')
+    updater = Updater(TOKEN, persistence=save_data, use_context=True)
 
     if server == 'empty':
         base_url = test_url_empty_json
@@ -508,8 +563,6 @@ def main(server):
     else:
         base_url = BASE_URL
 
-    updater = Updater(TOKEN, use_context=True)
-
     dp = updater.dispatcher
 
     dp.bot_data['base_url'] = base_url
@@ -530,11 +583,17 @@ if __name__ == '__main__':
         description='Запуск бота с тестовым или продакшн сервером.'
     )
     parser.add_argument('--server', choices=[
-        'empty', 'invalid', 'missing_fields',
-        'extra_fields', 'extra_collection',
-        'file_not_found', 'i_am_mentor',
-        'long_name_postcard', 'many_mentors_postcards',
-        'template_name', 'wrong_types',
+        'empty',
+        'invalid',
+        'missing_fields',
+        'extra_fields',
+        'extra_collection',
+        'file_not_found',
+        'i_am_mentor',
+        'long_name_postcard',
+        'many_mentors_postcards',
+        'template_name',
+        'wrong_types',
         '3_mentors_5_postcards'
         ],
         help=(
