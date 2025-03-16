@@ -28,11 +28,7 @@ class Postcard(BaseModel):
 
 
 class PostcardsResponse(BaseModel):
-    postcards: List[Postcard]    
-
-
-class AsciiArt(BaseModel):
-    ASCIIART: List[str]
+    postcards: List[Postcard]
 
 
 def get_mentors_or_congratulations(url, endpoint):
@@ -45,6 +41,7 @@ def get_mentors_or_congratulations(url, endpoint):
             raise ValueError("Неверный тип данных")
 
         full_url = f"{url}{endpoint}"
+
         response = httpx.get(full_url)
         response.raise_for_status()
         external_data = response.json()
