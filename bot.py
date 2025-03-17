@@ -486,36 +486,35 @@ def error_handler(update, context):
             context.user_data.clear()
             return
 
-    elif isinstance(error, BadRequest):
-        if 'Forbidden: bot was blocked by the user' in str(error):
-            print('Выбранный пользователь заблокировал бота.',
-                  error)
-            text = (
-                'Пользователь добавил бота в бан 😢 '
-                'попробуйте убедить его разблокировать бота 😇'
+    elif 'bot was blocked by the user' in str(error):
+        print('Выбранный пользователь заблокировал бота.', error)
+        text = (
+            'Выбранный ментор добавил бота в бан 😢 '
+            'попробуйте убедить его разблокировать бота 😇'
+        )
+
+        keyboard = [
+            [InlineKeyboardButton(
+                "Выбрать другого ментора",
+                callback_data='show_mentors'
+            )]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        if update and update.callback_query:
+            update.callback_query.message.reply_text(
+                text,
+                reply_markup=reply_markup
             )
+        else:
+            update.message.reply_text(text, reply_markup=reply_markup)
 
-            keyboard = [
-                [InlineKeyboardButton(
-                    "Выбрать другого ментора",
-                    callback_data='show_mentors'
-                )]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-
-            if update and update.callback_query:
-                update.callback_query.message.reply_text(
-                    text,
-                    reply_markup=reply_markup
-                )
-            else:
-                update.message.reply_text(text, reply_markup=reply_markup)
-
-            context.user_data.clear()
-            return
+        context.user_data.clear()
+        return
     else:
         print('Произошла непредвиденная ошибка. ', error)
         text = "Произошла непредвиденная ошибка. Попробуйте позже."
+        context.user_data.clear()
 
     if update and update.message:
         update.message.reply_text(text)
