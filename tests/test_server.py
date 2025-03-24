@@ -3,7 +3,7 @@ import os
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 
-class MyHandler(SimpleHTTPRequestHandler):
+class TestServerHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         print(f"Requested path: {self.path}")
         if self.path == '/':
@@ -119,7 +119,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(data).encode('utf-8'))
 
 
-def run(server_class=HTTPServer, handler_class=MyHandler, port=8000):
+def run(server_class=HTTPServer, handler_class=TestServerHandler, port=8000):
     server_address = ('127.0.0.1', port)
     http_server = server_class(server_address, handler_class)
     print(f'Сервер для тестов успешно запущен: http://{server_address[0]}:{port}')
