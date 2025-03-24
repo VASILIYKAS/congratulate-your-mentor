@@ -579,14 +579,14 @@ def get_url(server):
 def main(server):
     load_dotenv()
 
-    TOKEN = os.environ['TG_BOT_TOKEN']
-    if not TOKEN:
+    token = os.environ['TG_BOT_TOKEN']
+    if not token:
         print('Ошибка: Не указан TG_BOT_TOKEN.'
               'Убедитесь, что он задан в переменных окружения.')
         return
 
     save_data = PicklePersistence(filename='data.pickle')
-    updater = Updater(TOKEN, persistence=save_data, use_context=True)
+    updater = Updater(token, persistence=save_data, use_context=True)
 
     base_url = get_url(server)
 
