@@ -522,62 +522,7 @@ def error_handler(update, context):
         update.callback_query.message.reply_text(text)
 
 
-def main(server):
-    load_dotenv()
-
-    TOKEN = os.environ['TG_BOT_TOKEN']
-    if not TOKEN:
-        print('Ошибка: Не указан TG_BOT_TOKEN.'
-              'Убедитесь, что он задан в переменных окружения.')
-        return
-
-    save_data = PicklePersistence(filename='data.pickle')
-    updater = Updater(TOKEN, persistence=save_data, use_context=True)
-
-    if server == 'empty':
-        base_url = test_url_empty_json
-    elif server == 'invalid':
-        base_url = test_url_invalid_json
-    elif server == 'missing_fields':
-        base_url = test_url_missing_fields
-    elif server == 'extra_fields':
-        base_url = test_url_extra_fields
-    elif server == 'extra_collection':
-        base_url = test_url_extra_collection
-    elif server == 'file_not_found':
-        base_url = test_url_file_not_found
-    elif server == 'i_am_mentor':
-        base_url = test_url_i_am_mentor
-    elif server == 'long_name_postcard':
-        base_url = test_url_long_name_postcard
-    elif server == 'many_mentors_postcards':
-        base_url = test_url_many_mentors_postcards
-    elif server == 'template_name':
-        base_url = test_url_template_name
-    elif server == 'wrong_types':
-        base_url = test_url_wrong_types
-    elif server == '3_mentors_5_postcards':
-        base_url = test_url_3_mentors_5_postcards
-
-    else:
-        base_url = BASE_URL
-
-    dp = updater.dispatcher
-
-    dp.bot_data['base_url'] = base_url
-
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CallbackQueryHandler(button_handler))
-    dp.add_error_handler(error_handler)
-
-    set_menu_commands(updater.bot)
-
-    updater.start_polling()
-
-    updater.idle()
-
-
-if __name__ == '__main__':
+def create_parser():
     parser = argparse.ArgumentParser(
         description='Запуск бота с тестовым или продакшн сервером.'
     )
@@ -601,6 +546,68 @@ if __name__ == '__main__':
             'По умолчанию используется продакшн сервер.'
         )
     )
+    return parser
 
+
+def get_url(server):
+    if server == 'empty':
+        return test_url_empty_json
+    elif server == 'invalid':
+        return test_url_invalid_json
+    elif server == 'missing_fields':
+        return test_url_missing_fields
+    elif server == 'extra_fields':
+        return test_url_extra_fields
+    elif server == 'extra_collection':
+        return test_url_extra_collection
+    elif server == 'file_not_found':
+        return test_url_file_not_found
+    elif server == 'i_am_mentor':
+        return test_url_i_am_mentor
+    elif server == 'long_name_postcard':
+        return test_url_long_name_postcard
+    elif server == 'many_mentors_postcards':
+        return test_url_many_mentors_postcards
+    elif server == 'template_name':
+        return test_url_template_name
+    elif server == 'wrong_types':
+        return test_url_wrong_types
+    elif server == '3_mentors_5_postcards':
+        return test_url_3_mentors_5_postcards
+    else:
+        return BASE_URL
+
+
+def main(server):
+    load_dotenv()
+
+    TOKEN = os.environ['TG_BOT_TOKEN']
+    if not TOKEN:
+        print('Ошибка: Не указан TG_BOT_TOKEN.'
+              'Убедитесь, что он задан в переменных окружения.')
+        return
+
+    save_data = PicklePersistence(filename='data.pickle')
+    updater = Updater(TOKEN, persistence=save_data, use_context=True)
+
+    base_url = get_url(server)
+
+    dp = updater.dispatcher
+
+    dp.bot_data['base_url'] = base_url
+
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CallbackQueryHandler(button_handler))
+    dp.add_error_handler(error_handler)
+
+    set_menu_commands(updater.bot)
+
+    updater.start_polling()
+
+    updater.idle()
+
+
+if __name__ == '__main__':
+    parser = create_parser()
     args = parser.parse_args()
     main(args.server)
