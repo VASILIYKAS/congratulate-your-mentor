@@ -150,83 +150,83 @@ python bot.py
 python python tests/test_server.py
 ```
 Сервер будет доступен по адресу http://127.0.0.1:8000.\
-Для запуска определенного тестового сценария, нужно указать аргумент --server. \
+Для запуска определенного тестового сценария, нужно указать аргумент --test-case. \
 Команда:
 
 ```bash
-python python bot.py --server <название_сценария>
+python python bot.py --test-case <название_сценария>
 ```
 
 
 ### Доступные сценарии и команды
 - `empty`
 ```bash
-python bot.py --server empty
+python bot.py --test-case empty
 ```
 Тестовый сервер возвращает пустые списки менторов и открыток. Используется для проверки поведения бота при отсутствии данных.
 
 - `invalid`
 ```bash
-python bot.py --server invalid
+python bot.py --test-case invalid
 ```
 Сервер возвращает некорректный JSON. Проверяет обработку ошибок формата данных.
 
 - `missing_fields`
 ```bash
-python bot.py --server missing_fields
+python bot.py --test-case missing_fields
 ```
 Данные с пропущенными обязательными полями. Тестирует валидацию Pydantic.
 
 - `extra_fields`
 ```bash
-python bot.py --server extra_fields
+python bot.py --test-case extra_fields
 ```
 Данные с лишними полями. Проверяет, как бот игнорирует неиспользуемые поля.
 - `extra_collection`
 ```bash
-python bot.py --server extra_collection
+python bot.py --test-case extra_collection
 ```
 
 Возвращает дополнительные коллекции данных. Тестирует обработку избыточных данных.
 - `file_not_found`
 ```bash
-python bot.py --server file_not_found
+python bot.py --test-case file_not_found
 ```
 
 Сервер имитирует отсутствие файлов данных (404).
 - `i_am_mentor`
 ```bash
-python bot.py --server i_am_mentor
+python bot.py --test-case i_am_mentor
 ```
 Сценарий, где пользователь — ментор. Бот предлагает поздравить другого ментора или завершить работу.
 
 - `long_name_postcard`
 ```bash
-python bot.py --server long_name_postcard
+python bot.py --test-case long_name_postcard
 ```
 Открытки с длинным именем и длинным поздравлением. Тестирует отображение текста в кнопках.
 
 - `many_mentors_postcards`
 ```bash
-python bot.py --server many_mentors_postcards
+python bot.py --test-case many_mentors_postcards
 ```
 Большое количество менторов и открыток. Проверяет пагинацию и работу с большими списками.
 
 - `template_name`
 ```bash
-python bot.py --server template_name
+python bot.py --test-case template_name
 ```
 Открытки с шаблонными именами например, `#name`. Тестирует подстановку имени ментора.
 
 - `wrong_types`
 ```bash
-python bot.py --server wrong_types
+python bot.py --test-case wrong_types
 ```
 Данные с неверными типами полей. Проверяет валидацию Pydantic.
 
 - `3_mentors_5_postcards`
 ```bash
-python bot.py --server 3_mentors_5_postcards
+python bot.py --test-case 3_mentors_5_postcards
 ```
 Ограниченный набор: 3 ментора и 5 открыток. Тестирует базовую функциональность с небольшим количеством данных.\
 **Примечание**\
