@@ -1,5 +1,5 @@
 import httpx
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, Field
 from typing import List, Optional, Union
 
 
@@ -22,7 +22,7 @@ class MentorsResponse(BaseModel):
 
 class Postcard(BaseModel):
     id: int
-    holidayId: str
+    holiday_id: str = Field(alias='holidayId')
     name_ru: str
     body: Union[str, List[str]]
 
