@@ -431,6 +431,16 @@ def send_postcard(query, context):
     context.user_data.clear()
 
 
+def get_mentor_selection_button():
+    keyboard = [
+        [InlineKeyboardButton(
+            "Выбрать другого ментора",
+            callback_data='show_mentors'
+        )]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
 def error_handler(update, context):
     error = context.error
 
@@ -465,13 +475,7 @@ def error_handler(update, context):
                 'Попробуйте позже.'
             )
 
-            keyboard = [
-                [InlineKeyboardButton(
-                    "Выбрать другого ментора",
-                    callback_data='show_mentors'
-                )]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = get_mentor_selection_button()
 
             if update and update.callback_query:
                 update.callback_query.message.reply_text(
@@ -491,13 +495,7 @@ def error_handler(update, context):
             'попробуйте убедить его разблокировать бота 😇'
         )
 
-        keyboard = [
-            [InlineKeyboardButton(
-                "Выбрать другого ментора",
-                callback_data='show_mentors'
-            )]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        reply_markup = get_mentor_selection_button()
 
         if update and update.callback_query:
             update.callback_query.message.reply_text(
