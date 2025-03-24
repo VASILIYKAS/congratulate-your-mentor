@@ -524,7 +524,7 @@ def create_parser():
     parser = argparse.ArgumentParser(
         description='Запуск бота с тестовым или продакшн сервером.'
     )
-    parser.add_argument('--server', choices=[
+    parser.add_argument('--test-case', choices=[
         'empty',
         'invalid',
         'missing_fields',
@@ -540,14 +540,14 @@ def create_parser():
         ],
         help=(
             'Укажите название случая для тестового сервера. '
-            'Например: --server empty'
+            'Например: --test-case empty'
             'По умолчанию используется продакшн сервер.'
         )
     )
     return parser
 
 
-def get_url(server):
+def get_url(test_case):
     urls = {
         'empty': test_url_empty_json,
         'invalid': test_url_invalid_json,
@@ -562,10 +562,10 @@ def get_url(server):
         'wrong_types': test_url_wrong_types,
         '3_mentors_5_postcards': test_url_3_mentors_5_postcards
     }
-    return urls.get(server, BASE_URL)
+    return urls.get(test_case, BASE_URL)
 
 
-def main(server):
+def main(test_case):
     load_dotenv()
 
     token = os.environ['TG_BOT_TOKEN']
@@ -577,7 +577,7 @@ def main(server):
     save_data = PicklePersistence(filename='data.pickle')
     updater = Updater(token, persistence=save_data, use_context=True)
 
-    base_url = get_url(server)
+    base_url = get_url(test_case)
 
     dispatcher = updater.dispatcher
 
@@ -597,4 +597,4 @@ def main(server):
 if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
-    main(args.server)
+    main(args.test_case)
