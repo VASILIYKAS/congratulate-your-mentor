@@ -10,20 +10,7 @@ from telegram import BotCommand
 from telegram.error import BadRequest
 from libs.api_client import get_mentors_or_congratulations
 from pydantic import ValidationError
-from tests.test_urls import (
-    test_url_empty_json,
-    test_url_3_mentors_5_postcards,
-    test_url_extra_collection,
-    test_url_extra_fields,
-    test_url_file_not_found,
-    test_url_i_am_mentor,
-    test_url_invalid_json,
-    test_url_long_name_postcard,
-    test_url_many_mentors_postcards,
-    test_url_missing_fields,
-    test_url_template_name,
-    test_url_wrong_types
-)
+from tests.test_urls import urls
 from textwrap import dedent
 
 
@@ -547,20 +534,6 @@ def create_parser():
 
 
 def get_url(test_case):
-    urls = {
-        'empty': test_url_empty_json,
-        'invalid': test_url_invalid_json,
-        'missing_fields': test_url_missing_fields,
-        'extra_fields': test_url_extra_fields,
-        'extra_collection': test_url_extra_collection,
-        'file_not_found': test_url_file_not_found,
-        'i_am_mentor': test_url_i_am_mentor,
-        'long_name_postcard': test_url_long_name_postcard,
-        'many_mentors_postcards': test_url_many_mentors_postcards,
-        'template_name': test_url_template_name,
-        'wrong_types': test_url_wrong_types,
-        '3_mentors_5_postcards': test_url_3_mentors_5_postcards
-    }
     return urls.get(test_case, BASE_URL)
 
 
