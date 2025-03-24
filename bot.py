@@ -548,32 +548,21 @@ def create_parser():
 
 
 def get_url(server):
-    if server == 'empty':
-        return test_url_empty_json
-    elif server == 'invalid':
-        return test_url_invalid_json
-    elif server == 'missing_fields':
-        return test_url_missing_fields
-    elif server == 'extra_fields':
-        return test_url_extra_fields
-    elif server == 'extra_collection':
-        return test_url_extra_collection
-    elif server == 'file_not_found':
-        return test_url_file_not_found
-    elif server == 'i_am_mentor':
-        return test_url_i_am_mentor
-    elif server == 'long_name_postcard':
-        return test_url_long_name_postcard
-    elif server == 'many_mentors_postcards':
-        return test_url_many_mentors_postcards
-    elif server == 'template_name':
-        return test_url_template_name
-    elif server == 'wrong_types':
-        return test_url_wrong_types
-    elif server == '3_mentors_5_postcards':
-        return test_url_3_mentors_5_postcards
-    else:
-        return BASE_URL
+    urls = {
+        'empty': test_url_empty_json,
+        'invalid': test_url_invalid_json,
+        'missing_fields': test_url_missing_fields,
+        'extra_fields': test_url_extra_fields,
+        'extra_collection': test_url_extra_collection,
+        'file_not_found': test_url_file_not_found,
+        'i_am_mentor': test_url_i_am_mentor,
+        'long_name_postcard': test_url_long_name_postcard,
+        'many_mentors_postcards': test_url_many_mentors_postcards,
+        'template_name': test_url_template_name,
+        'wrong_types': test_url_wrong_types,
+        '3_mentors_5_postcards': test_url_3_mentors_5_postcards
+    }
+    return urls.get(server, BASE_URL)
 
 
 def main(server):
