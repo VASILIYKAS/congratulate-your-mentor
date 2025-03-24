@@ -590,13 +590,13 @@ def main(server):
 
     base_url = get_url(server)
 
-    dp = updater.dispatcher
+    dispatcher = updater.dispatcher
 
-    dp.bot_data['base_url'] = base_url
+    dispatcher.bot_data['base_url'] = base_url
 
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CallbackQueryHandler(button_handler))
-    dp.add_error_handler(error_handler)
+    dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(CallbackQueryHandler(button_handler))
+    dispatcher.add_error_handler(error_handler)
 
     set_menu_commands(updater.bot)
 
