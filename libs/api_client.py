@@ -13,7 +13,7 @@ class Mentor(BaseModel):
     name: Name
     tg_username: str
     tg_chat_id: int
-    bday: Optional[str] = None
+    birthday: Optional[str] = Field(default=None, alias='bday')
 
 
 class MentorsResponse(BaseModel):
