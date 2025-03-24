@@ -1,17 +1,26 @@
-import os
-import httpx
-import json
 import argparse
-from dotenv import load_dotenv
-from telegram.ext import Updater, CommandHandler
-from telegram.ext import CallbackQueryHandler, PicklePersistence
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import BotCommand
-from telegram.error import BadRequest
-from libs.api_client import get_mentors_or_congratulations
-from pydantic import ValidationError
-from tests.test_urls import urls
+import json
+import os
 from textwrap import dedent
+
+import httpx
+from dotenv import load_dotenv
+from pydantic import ValidationError
+from telegram import (
+    BotCommand,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
+from telegram.error import BadRequest
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    PicklePersistence,
+    Updater,
+)
+
+from libs.api_client import get_mentors_or_congratulations
+from tests.test_urls import urls
 
 
 MENTORS = '/mentors'
