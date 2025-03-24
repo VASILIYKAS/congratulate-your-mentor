@@ -126,7 +126,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"error": "Bad Request"}')
             return
-        
+
         if not file_path:
             self.send_response(404)
             self.send_header("Content-type", "application/json")
@@ -152,9 +152,9 @@ class MyHandler(SimpleHTTPRequestHandler):
 
 def run(server_class=HTTPServer, handler_class=MyHandler, port=8000):
     server_address = ('127.0.0.1', port)
-    httpd = server_class(server_address, handler_class)
+    http_server = server_class(server_address, handler_class)
     print(f'Сервер для тестов успешно запущен: http://{server_address[0]}:{port}')
-    httpd.serve_forever()
+    http_server.serve_forever()
 
 
 if __name__ == "__main__":
