@@ -154,7 +154,7 @@ python tests/test_server.py
 Команда:
 
 ```bash
-python python bot.py --test-case <название_сценария>
+python bot.py --test-case <название_сценария>
 ```
 
 
