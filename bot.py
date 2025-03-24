@@ -399,17 +399,15 @@ def send_postcard(query, context):
 
     first_name, second_name = get_mentor_name_by_id(chat_id, base_url)
 
-    greetings = []
-
-    for postcard in selected_postcard:
-        if isinstance(postcard, str):
-            greetings.append(postcard.replace('#name', first_name))
-        elif isinstance(postcard, list):
-            greetings.extend([
-                line.replace('#name', first_name) for line in postcard
-            ])
-
-    greeting_text = "\n".join(greetings)
+    if isinstance(selected_postcard, str):
+        greeting_text = selected_postcard.replace('#name', first_name)
+    elif isinstance(selected_postcard, list):
+        greeting_lines = [
+            line.replace('#name', first_name)
+            for line in selected_postcard
+            if isinstance(line, str)
+        ]
+        greeting_text = "\n".join(greeting_lines)
 
     context.bot.send_message(chat_id=chat_id, text=greeting_text)
 
