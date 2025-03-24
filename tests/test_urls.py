@@ -1,12 +1,14 @@
-test_url_empty_json = 'http://127.0.0.1:8000/empty_json'
-test_url_invalid_json = 'http://127.0.0.1:8000/invalid_json'
-test_url_3_mentors_5_postcards = 'http://127.0.0.1:8000/3_mentors_5_postcards'
-test_url_extra_collection = 'http://127.0.0.1:8000/extra_collection'
-test_url_extra_fields = 'http://127.0.0.1:8000/extra_fields'
-test_url_i_am_mentor = 'http://127.0.0.1:8000/i_am_mentor'
-test_url_long_name_postcard = 'http://127.0.0.1:8000/long_name_postcard'
-test_url_many_mentors_postcards = 'http://127.0.0.1:8000/many_mentors_postcards'
-test_url_missing_fields = 'http://127.0.0.1:8000/missing_fields'
-test_url_template_name = 'http://127.0.0.1:8000/template_name'
-test_url_wrong_types = 'http://127.0.0.1:8000/wrong_types'
-test_url_file_not_found = 'http://127.0.0.1:8000/file_not_found'
+urls = {
+    'empty': 'http://127.0.0.1:8000/empty_json',
+    'invalid': 'http://127.0.0.1:8000/invalid_json',
+    '3_mentors_5_postcards': 'http://127.0.0.1:8000/3_mentors_5_postcards',
+    'extra_collection': 'http://127.0.0.1:8000/extra_collection',
+    'extra_fields': 'http://127.0.0.1:8000/extra_fields',
+    'i_am_mentor': 'http://127.0.0.1:8000/i_am_mentor',
+    'long_name_postcard': 'http://127.0.0.1:8000/long_name_postcard',
+    'many_mentors_postcards': 'http://127.0.0.1:8000/many_mentors_postcards',
+    'missing_fields': 'http://127.0.0.1:8000/missing_fields',
+    'template_name': 'http://127.0.0.1:8000/template_name',
+    'wrong_types': 'http://127.0.0.1:8000/wrong_types',
+    'file_not_found': 'http://127.0.0.1:8000/file_not_found'
+}
