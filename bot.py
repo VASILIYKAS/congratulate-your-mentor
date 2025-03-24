@@ -474,39 +474,18 @@ def error_handler(update, context):
                 'Пользователь ещё не взаимодействовал с ботом. '
                 'Попробуйте позже.'
             )
-
             reply_markup = get_mentor_selection_button()
-
-            if update and update.callback_query:
-                update.callback_query.message.reply_text(
-                    text,
-                    reply_markup=reply_markup
-                )
-            else:
-                update.message.reply_text(text, reply_markup=reply_markup)
-
             context.user_data.clear()
-            return
 
-    elif 'bot was blocked by the user' in str(error):
-        print('Выбранный пользователь заблокировал бота.', error)
-        text = (
-            'Выбранный ментор добавил бота в бан 😢 '
-            'попробуйте убедить его разблокировать бота 😇'
-        )
-
-        reply_markup = get_mentor_selection_button()
-
-        if update and update.callback_query:
-            update.callback_query.message.reply_text(
-                text,
-                reply_markup=reply_markup
+        elif 'bot was blocked by the user' in str(error):
+            print('Выбранный пользователь заблокировал бота.', error)
+            text = (
+                'Выбранный ментор добавил бота в бан 😢 '
+                'попробуйте убедить его разблокировать бота 😇'
             )
-        else:
-            update.message.reply_text(text, reply_markup=reply_markup)
+            reply_markup = get_mentor_selection_button()
+            context.user_data.clear()
 
-        context.user_data.clear()
-        return
     else:
         print('Произошла непредвиденная ошибка. ', error)
         text = "Произошла непредвиденная ошибка. Попробуйте позже."
@@ -515,7 +494,10 @@ def error_handler(update, context):
     if update and update.message:
         update.message.reply_text(text)
     elif update and update.callback_query:
-        update.callback_query.message.reply_text(text)
+        update.callback_query.message.reply_text(
+            text,
+            reply_markup=reply_markup
+        )
 
 
 def create_parser():
