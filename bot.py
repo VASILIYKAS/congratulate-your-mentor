@@ -51,13 +51,13 @@ def start(update, context):
         return
 
     elif step == 'theme_chosen':
-        holidayId = context.user_data.get('holiday_id')
+        holiday_id = context.user_data.get('holiday_id')
         update.message.reply_text(
             "Вы остановились на выборе тематике поздравления. "
             "Выберите поздравление."
         )
 
-        show_postcards(update, context, holidayId)
+        show_postcards(update, context, holiday_id)
         return
 
     elif step == 'mentor_and_postcard_chosen':
@@ -186,7 +186,7 @@ def show_greeting_themes(update_or_query, context):
         for postcard in postcards:
             if postcard.name_ru not in same_names:
                 same_names.add(postcard.name_ru)
-                callback = f"theme_{postcard.holidayId}"
+                callback = f"theme_{postcard.holiday_id}"
                 buttons.append([InlineKeyboardButton(
                     postcard.name_ru,
                     callback_data=callback
@@ -201,7 +201,7 @@ def show_greeting_themes(update_or_query, context):
         raise e
 
 
-def show_postcards(update_or_query, context, holidayId, page=0):
+def show_postcards(update_or_query, context, holiday_id, page=0):
     if hasattr(update_or_query, 'message'):
         reply_func = update_or_query.message.reply_text
     else:
@@ -231,7 +231,7 @@ def show_postcards(update_or_query, context, holidayId, page=0):
         filtered_postcards = [
             postcard
             for postcard in postcards
-            if postcard.holidayId in holidayId
+            if postcard.holiday_id in holiday_id
         ]
 
         if not filtered_postcards:
@@ -270,13 +270,13 @@ def show_postcards(update_or_query, context, holidayId, page=0):
         if page > 0:
             navigation_buttons.append(InlineKeyboardButton(
                 '◀️',
-                callback_data=f'postcardpage_{holidayId}_{page - 1}')
+                callback_data=f'postcardpage_{holiday_id}_{page - 1}')
             )
 
         if end_index < len(filtered_postcards):
             navigation_buttons.append(InlineKeyboardButton(
                 '▶️',
-                callback_data=f'postcardpage_{holidayId}_{page + 1}')
+                callback_data=f'postcardpage_{holiday_id}_{page + 1}')
             )
 
         if navigation_buttons:
