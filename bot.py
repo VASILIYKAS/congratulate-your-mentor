@@ -546,7 +546,10 @@ def get_url(test_case):
     return urls.get(test_case, BASE_URL)
 
 
-def main(test_case):
+def main():
+    parser = create_parser()
+    args = parser.parse_args()
+    test_case = args.test_case
     load_dotenv()
 
     token = os.environ['TG_BOT_TOKEN']
@@ -578,6 +581,4 @@ def main(test_case):
 
 
 if __name__ == '__main__':
-    parser = create_parser()
-    args = parser.parse_args()
-    main(args.test_case)
+    main()
